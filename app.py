@@ -1,6 +1,7 @@
 from functools import lru_cache
 import ipaddress
 import random
+import os
 
 import geoip2.database
 
@@ -9,6 +10,9 @@ from starlette.applications import Starlette
 from starlette.responses import Response
 
 app = Starlette()
+
+LOCATIONS = os.environ.get('LOCATIONS', '')
+IPS = os.environ.get('IPS', '')
 
 
 def _load_geoip_db():
@@ -71,8 +75,12 @@ def _is_allowed_area(ip, location_allowlist, log):
 
 @app.route('/')
 async def check_ip(request):
-    location_allowlist = request.query_params.get('locations', default='')
-    ip_allowlist = request.query_params.get('ips', default='')
+
+    # location_allowlist = request.query_params.get('locations', default='')
+    location_allowlist = LOCATIONS
+
+    # ip_allowlist = request.query_params.get('ips', default='')
+    ip_allowlist = IPS
 
     if _is_allowed(request.client.host, ip_allowlist, location_allowlist):
         return Response('OK')
